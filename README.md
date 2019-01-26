@@ -68,17 +68,28 @@ There is only 40 bytes of disk storage overhead for each file's metadata. It is 
 SeaweedFS started by implementing [Facebook's Haystack design paper](http://www.usenix.org/event/osdi10/tech/full_papers/Beaver.pdf).
 
 SeaweedFS can work very well with just the object store. [[Filer]] can then be added later to support directories and POSIX attributes. Filer is a separate linearly-scalable stateless server with customizable metadata stores, e.g., MySql/Postgres/Redis/Cassandra/LevelDB.
+# 下载路径
+**(下载路径)https://github.com/chrislusf/seaweedfs/releases**
 
 ## Additional Features
 * Can choose no replication or different replication levels, rack and data center aware
 * Automatic master servers failover - no single point of failure (SPOF)
+* 
 * Automatic Gzip compression depending on file mime type
+* 根据文件的mime类型自动Gzip压缩   mime类型参考：https://www.cnblogs.com/jsean/articles/1610265.html
 * Automatic compaction to reclaim disk space after deletion or update
+* 自动压实恢复磁盘空间在删除和更新之后
 * Servers in the same cluster can have different disk spaces, file systems, OS etc.
+* 同一个集群中的服务器可以有不同的磁盘空间，文件系统，操作系统等等。
 * Adding/Removing servers does **not** cause any data re-balancing
-* Optionally fix the orientation for jpeg pictures
+* 添加/删除 服务器不会引起任何数据调整
+* Optionally fix the orientation for jpeg pictures 
+* 随意的修改图片方向
 * Support Etag, Accept-Range, Last-Modified, etc.
+* 支持 etag， Accept-Range, Last-Modified 相关etag的信息：https://blog.csdn.net/t12x3456/article/details/17301897
 * Support in-memory/leveldb/boltdb/btree mode tuning for memory/performance balance.
+* 支持 内存/leveldb/boltdb/btreee 模式 调节内存性能平衡  性能平衡的文章：https://www.jianshu.com/p/0f330628fd41 
+* 关于leveldb/boltdb 的资料 可以查看 https://juejin.im/entry/5a93a776f265da4e9c634b87
 
 ## Filer Features
 * [filer server][Filer] provide "normal" directories and files via http.
@@ -298,10 +309,38 @@ SeaweedFS can also store extra large files by splitting them into manageable dat
 
 The architectures are mostly the same. SeaweedFS aims to store and read files fast, with a simple and flat architecture. The main differences are
 
-* SeaweedFS optimizes for small files, ensuring O(1) disk seek operation, and can also handle large files.
-* SeaweedFS statically assigns a volume id for a file. Locating file content becomes just a lookup of the volume id, which can be easily cached.
-* SeaweedFS Filer metadata store can be any well-known and proven data stores, e.g., Cassandra, Redis, MySql, Postgres, etc, and is easy to customized.
-* SeaweedFS Volume server also communicates directly with clients via HTTP, supporting range queries, direct uploads, etc.
+- [SeaweedFS](#seaweedfs)
+  - [Introduction](#introduction)
+- [下载路径](#%E4%B8%8B%E8%BD%BD%E8%B7%AF%E5%BE%84)
+  - [Additional Features](#additional-features)
+  - [Filer Features](#filer-features)
+  - [Example Usage](#example-usage)
+    - [Start Master Server](#start-master-server)
+    - [Start Volume Servers](#start-volume-servers)
+    - [Write File](#write-file)
+    - [Save File Id](#save-file-id)
+    - [Read File](#read-file)
+    - [Rack-Aware and Data Center-Aware Replication](#rack-aware-and-data-center-aware-replication)
+    - [Allocate File Key on specific data center](#allocate-file-key-on-specific-data-center)
+    - [Other Features](#other-features)
+  - [Architecture](#architecture)
+    - [Master Server and Volume Server](#master-server-and-volume-server)
+    - [Write and Read files](#write-and-read-files)
+    - [Storage Size](#storage-size)
+    - [Saving memory](#saving-memory)
+  - [Compared to Other File Systems](#compared-to-other-file-systems)
+    - [Compared to HDFS](#compared-to-hdfs)
+    - [Compared to GlusterFS, Ceph](#compared-to-glusterfs-ceph)
+    - [Compared to GlusterFS](#compared-to-glusterfs)
+    - [Compared to Ceph](#compared-to-ceph)
+  - [Dev plan](#dev-plan)
+  - [Installation guide for users who are not familiar with golang](#installation-guide-for-users-who-are-not-familiar-with-golang)
+  - [Disk Related topics](#disk-related-topics)
+    - [Hard Drive Performance](#hard-drive-performance)
+    - [Solid State Disk](#solid-state-disk)
+  - [Benchmark](#benchmark)
+  - [License](#license)
+  - [Stargazers over time](#stargazers-over-time)
 
 | System         | File Meta                       | File Content Read| POSIX  | REST API | Optimized for small files |
 | -------------  | ------------------------------- | ---------------- | ------ | -------- | ------------------------- |
